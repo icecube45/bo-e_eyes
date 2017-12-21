@@ -1,0 +1,83 @@
+<!DOCTYPE html> <html><head><meta http-equiv="Content-Type" 
+content="text/html; charset=UTF-8">
+    <title>Bo-E Eyes</title>
+    <meta name="viewport" content="width=device-width, 
+initial-scale=1.0, user-scalable=no">
+    <link rel="image_src" href="https://two.js.org/images/logo.gif">
+    <link rel="shortcut icon" type="image/gif" 
+href="https://two.js.org/images/favicon.gif">
+    <script async="" 
+src="https://www.google-analytics.com/analytics.js"></script><script 
+src="./third-party/url.js"></script>
+    <script 
+src="./third-party/jquery.js"></script><style></style>
+    <script src="./third-party/two.js"></script>
+    <style>
+      * { margin: 0; padding: 0; cursor: none; }
+      body { background: #000000; }
+    </style>
+  </head>
+  <body style="overflow: hidden; margin: 0px; padding: 0px; top: 0px; 
+left: 0px; right: 0px; bottom: 0px; position: fixed;">
+    <div class="scripts">
+      <script>
+        $(function() {
+          var type = /(canvas|webgl)/.test(url.type) ? url.type : 'svg';
+          var two = new Two({
+            type: Two.Types[type],
+            fullscreen: true,
+            autostart: true
+          }).appendTo(document.body);
+          Two.Resoultion = 32;
+          var delta = new Two.Vector();
+          var mouse = new Two.Vector();
+          var drag = 0.33;
+          var radius = 50;
+          var ball = two.makePath(0,75, 75, 0, 150, 75, 150-37.5, 75, 
+75,37.5, 37.5,75);
+          ball.noStroke().fill = "#2980b9";
+          _.each(ball.vertices, function(v) {
+            v.origin = new Two.Vector().copy(v);
+          });
+          var $window = $(window)
+            .bind('mousemove', function(e) {
+              mouse.x = e.clientX;
+              mouse.y = e.clientY;
+            })
+            .bind('touchstart', function() {
+              e.preventDefault();
+              return false;
+            })
+            .bind('touchmove', function(e) {
+              e.preventDefault();
+              var touch = e.originalEvent.changedTouches[0];
+              mouse.x = touch.pageX;
+              mouse.y = touch.pageY;
+              return false;
+            });
+          two.bind('update', function() {
+            delta.copy(mouse).subSelf(ball.translation);
+            _.each(ball.vertices, function(v, i) {
+              var dist = v.origin.distanceTo(delta);
+              var pct = dist / radius;
+              var x = delta.x * pct;
+              var y = delta.y * pct;
+              var destx = v.origin.x - x;
+              var desty = v.origin.y - y;
+              v.x += (destx - v.x) * drag;
+              v.y += (desty - v.y) * drag;
+            });
+            ball.translation.addSelf(delta);
+          });
+      });
+      </script>
+    </div>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new 
+Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-40550435-1', 'github.com');
+      ga('send', 'pageview');
+    </script> </body></html>

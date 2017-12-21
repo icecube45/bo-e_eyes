@@ -1,16 +1,10 @@
 <!DOCTYPE html> <html><head><meta http-equiv="Content-Type"
 content="text/html; charset=UTF-8">
     <title>Bo-E Eyes</title>
-    <meta name="viewport" content="width=device-width,
-initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel="image_src" href="https://two.js.org/images/logo.gif">
-    <link rel="shortcut icon" type="image/gif"
-href="https://two.js.org/images/favicon.gif">
-    <script async=""
-src="https://www.google-analytics.com/analytics.js"></script><script
-src="./third-party/url.js"></script>
-    <script
-src="./third-party/jquery.js"></script><style></style>
+    <link rel="shortcut icon" type="image/gif" href="./favicon.ico">
+    <script src="./third-party/jquery.js"></script><style></style>
     <script src="./third-party/two.js"></script>
     <style>
       * { margin: 0; padding: 0; cursor: none; }
@@ -25,17 +19,22 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
           var type = /(canvas|webgl)/.test(url.type) ? url.type : 'svg';
           var two = new Two({
             type: Two.Types[type],
+            width: 656,
+            height: 416,
             fullscreen: true,
             autostart: true
           }).appendTo(document.body);
           Two.Resoultion = 32;
           var delta = new Two.Vector();
           var mouse = new Two.Vector();
-          var width=75;
-          var drag = 0.33;
+          var drag = 0.2;
           var leftEye = two.makePath(-138, 75, 75-138, 0, 150-138, 75, 150-37.5-138, 75,75-138, 37.5, 37.5-138,75);
           var rightEye = two.makePath(138, 75, 75+138, 0, 150+138, 75, 150-37.5+138, 75,75+138, 37.5, 37.5+138,75);
           var eyes = two.makeGroup(leftEye, rightEye)
+          var width=50;
+          // eyes.scale = two.width/656;
+          console.log("SCALE:");
+          console.log(two.width/656);
           eyes.noStroke().fill = "#2980b9";
           _.each(eyes.children, function(v){
             _.each(v.vertices, function(v) {

@@ -44,6 +44,11 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
           eyes.center();
           leftEye.translation.set(-138,0);
           rightEye.translation.set(138,0);
+
+
+
+
+
           Object.defineProperty(eye_properties,'eye_height',
           {
             get: function() {
@@ -86,7 +91,15 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
             }
           });
 
-
+          var blink = new TWEEN.Tween({width: eye_properties.eye_thickness})
+              .to({width: 0}, 70)
+              .onUpdate(function(val){
+                eye_properties.eye_thickness=val.width;
+              })
+              .delay(1000)
+              .repeat(Infinity)
+              .yoyo(true)
+              .start();
 
 
           var width=50;

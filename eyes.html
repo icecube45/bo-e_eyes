@@ -7,6 +7,7 @@ content="text/html; charset=UTF-8">
     <script src="./third-party/url.js"></script>
     <script src="./third-party/jquery.js"></script><style></style>
     <script src="./third-party/two.js"></script>
+    <script src="./third-party/Tween.js"></script>
     <style>
       * { margin: 0; padding: 0; cursor: none; }
       body { background: #000000; }
@@ -26,17 +27,74 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
             autostart: true
           }).appendTo(document.body);
           Two.Resoultion = 32;
+          var eye_properties = {};
+          eye_thickness = 37.5;
+          eye_amplitude = 37.5;
+          eye_height = 75;
+          eye_width  = 150;
+          eye_spacing = 138;
+
           var delta = new Two.Vector();
           var mouse = new Two.Vector();
           var drag = 0.2;
-          var leftEye = two.makePath(-138, 75, 75-138, 0, 150-138, 75, 150-37.5-138, 75,75-138, 37.5, 37.5-138,75);
-          var rightEye = two.makePath(138, 75, 75+138, 0, 150+138, 75, 150-37.5+138, 75,75+138, 37.5, 37.5+138,75);
-          var eyes = two.makeGroup(leftEye, rightEye)
+          var mouseDot = two.makeCircle(0,0,5);
+          var leftEye  = two.makePath(-eye_width/2, eye_height/2,  0, -eye_height/2,  eye_width/2, eye_height/2,  eye_width/2-eye_thickness, eye_height/2, 0, -eye_height/2+eye_thickness, -eye_width/2+eye_thickness, eye_height/2);
+          var rightEye = two.makePath(-eye_width/2, eye_height/2,  0, -eye_height/2,  eye_width/2, eye_height/2,  eye_width/2-eye_thickness, eye_height/2, 0, -eye_height/2+eye_thickness, -eye_width/2+eye_thickness, eye_height/2);
+          var eyes = two.makeGroup(leftEye, rightEye);
+          eyes.center();
+          leftEye.translation.set(-138,0);
+          rightEye.translation.set(138,0);
+          Object.defineProperty(eye_properties,'eye_height',
+          {
+            get: function() {
+              return eye_height;
+            },
+            set: function(value){
+            eye_height=value;
+              leftEye.vertices[0].origin.y = eye_height/2;
+              leftEye.vertices[1].origin.y = -eye_height/2;
+              leftEye.vertices[2].origin.y = eye_height/2;
+              leftEye.vertices[3].origin.y = eye_height/2;
+              leftEye.vertices[4].origin.y = -eye_height/2+eye_thickness
+              leftEye.vertices[5].origin.y = eye_height/2;
+            }
+          });
+          Object.defineProperty(eye_properties,'eye_thickness',
+          {
+            get: function() {
+              return eye_thickness;
+            },
+            set: function(value){
+              eye_thickness=value;
+              leftEye.vertices[3].origin.x = eye_width/2-eye_thickness;
+              leftEye.vertices[4].origin.y = -eye_height/2+eye_thickness;
+              leftEye.vertices[5].origin.x = -eye_width/2+eye_thickness;
+            }
+          });
+          Object.defineProperty(eye_properties,'eye_width',
+          {
+            get: function() {
+              return eye_width;
+            },
+            set: function(value){
+              console.log("test");
+              eye_width=value;
+              leftEye.vertices[0].origin.x = -eye_width/2;
+              leftEye.vertices[2].origin.x = eye_width/2;
+              leftEye.vertices[3].origin.x = eye_width/2-eye_thickness;
+              leftEye.vertices[5].origin.x = -eye_width/2+eye_thickness;
+            }
+          });
+
+
+
+
           var width=50;
           // eyes.scale = two.width/656;
           console.log("SCALE:");
           console.log(two.width/656);
           eyes.noStroke().fill = "#2980b9";
+          mouseDot.noStroke().fill = "#FFFFFF";
           _.each(eyes.children, function(v){
             _.each(v.vertices, function(v) {
               v.origin = new Two.Vector().copy(v);
@@ -51,6 +109,17 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
               e.preventDefault();
               return false;
             })
+            .bind('mousedown', function(e){
+              // mouse.x=Math.random()*two.width
+              // mouse.y=Math.random()*two.height
+
+              eye_properties.eye_width+=10;
+              _.each(leftEye.vertices, function(v){
+                console.log(v.origin);
+              });
+
+
+            })
             .bind('touchmove', function(e) {
               e.preventDefault();
               var touch = e.originalEvent.changedTouches[0];
@@ -59,6 +128,8 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
               return false;
             });
           two.bind('update', function() {
+            TWEEN.update();
+            mouseDot.translation.set(mouse.x,mouse.y)
             delta.copy(mouse).subSelf(eyes.translation);
             _.each(eyes.children, function(v){
               _.each(v.vertices, function(v, i) {

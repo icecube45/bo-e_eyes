@@ -28,11 +28,17 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
           }).appendTo(document.body);
           Two.Resoultion = 32;
           var eye_properties = {};
-          eye_thickness = 37.5;
-          eye_amplitude = 37.5;
-          eye_height = 75;
-          eye_width  = 150;
-          eye_spacing = 138;
+          eye_thickness_base = 37.5;
+          eye_amplitude_base = 37.5;
+          eye_height_base = 75;
+          eye_width_base  = 150;
+          eye_spacing_base = 138;
+
+          eye_thickness=eye_thickness_base
+          eye_amplitude=eye_amplitude_base
+          eye_height=eye_height_base
+          eye_width = eye_width_base
+          eye_spacing = eye_spacing_base
 
           var delta = new Two.Vector();
           var mouse = new Two.Vector();
@@ -41,6 +47,7 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
           var leftEye  = two.makePath(-eye_width/2, eye_height/2,  0, -eye_height/2,  eye_width/2, eye_height/2,  eye_width/2-eye_thickness, eye_height/2, 0, -eye_height/2+eye_thickness, -eye_width/2+eye_thickness, eye_height/2);
           var rightEye = two.makePath(-eye_width/2, eye_height/2,  0, -eye_height/2,  eye_width/2, eye_height/2,  eye_width/2-eye_thickness, eye_height/2, 0, -eye_height/2+eye_thickness, -eye_width/2+eye_thickness, eye_height/2);
           var eyes = two.makeGroup(leftEye, rightEye);
+          var groupRect = new Two.Rectangle(0,0,20,20);
           eyes.center();
           leftEye.translation.set(-138,0);
           rightEye.translation.set(138,0);
@@ -55,13 +62,19 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
               return eye_height;
             },
             set: function(value){
-            eye_height=value;
+              eye_height=value;
               leftEye.vertices[0].origin.y = eye_height/2;
               leftEye.vertices[1].origin.y = -eye_height/2;
               leftEye.vertices[2].origin.y = eye_height/2;
               leftEye.vertices[3].origin.y = eye_height/2;
               leftEye.vertices[4].origin.y = -eye_height/2+eye_thickness
               leftEye.vertices[5].origin.y = eye_height/2;
+              rightEye.vertices[0].origin.y = eye_height/2;
+              rightEye.vertices[1].origin.y = -eye_height/2;
+              rightEye.vertices[2].origin.y = eye_height/2;
+              rightEye.vertices[3].origin.y = eye_height/2;
+              rightEye.vertices[4].origin.y = -eye_height/2+eye_thickness
+              rightEye.vertices[5].origin.y = eye_height/2;
             }
           });
           Object.defineProperty(eye_properties,'eye_thickness',
@@ -74,6 +87,9 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
               leftEye.vertices[3].origin.x = eye_width/2-eye_thickness;
               leftEye.vertices[4].origin.y = -eye_height/2+eye_thickness;
               leftEye.vertices[5].origin.x = -eye_width/2+eye_thickness;
+              rightEye.vertices[3].origin.x = eye_width/2-eye_thickness;
+              rightEye.vertices[4].origin.y = -eye_height/2+eye_thickness;
+              rightEye.vertices[5].origin.x = -eye_width/2+eye_thickness;
             }
           });
           Object.defineProperty(eye_properties,'eye_width',
@@ -88,18 +104,30 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
               leftEye.vertices[2].origin.x = eye_width/2;
               leftEye.vertices[3].origin.x = eye_width/2-eye_thickness;
               leftEye.vertices[5].origin.x = -eye_width/2+eye_thickness;
+              rightEye.vertices[0].origin.x = -eye_width/2;
+              rightEye.vertices[2].origin.x = eye_width/2;
+              rightEye.vertices[3].origin.x = eye_width/2-eye_thickness;
+              rightEye.vertices[5].origin.x = -eye_width/2+eye_thickness;
             }
           });
 
-          var blink = new TWEEN.Tween({width: eye_properties.eye_thickness})
-              .to({width: 0}, 70)
-              .onUpdate(function(val){
-                eye_properties.eye_thickness=val.width;
-              })
-              .delay(1000)
-              .repeat(Infinity)
-              .yoyo(true)
-              .start();
+          // var blink = new TWEEN.Tween(eye_properties)
+          //     .to({eye_thickness: 0, eye_height: 0}, 50)
+          //     .onComplete(function(e){
+          //       var blinkEnd = new TWEEN.Tween(eye_properties)
+          //           .to({eye_thickness: eye_thickness_base, eye_height: eye_height_base}, 50)
+          //           .delay(150)
+          //           .onComplete(function(e){
+          //             var blinkIDLE = new TWEEN.Tween(eye_properties) //hacky async delay before starting blink loop again
+          //                 .to({eye_thickness: eye_thickness_base, eye_height: eye_height_base}, Math.random()*7000+6000)
+          //                 .onComplete(function(e){
+          //                   blink.start();
+          //                 })
+          //                 .start();
+          //           })
+          //           .start();
+          //     })
+          //     .start();
 
 
           var width=50;
@@ -108,11 +136,41 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
           console.log(two.width/656);
           eyes.noStroke().fill = "#2980b9";
           mouseDot.noStroke().fill = "#FFFFFF";
+          groupRect.noStroke().fill = "#FF8000"
           _.each(eyes.children, function(v){
             _.each(v.vertices, function(v) {
               v.origin = new Two.Vector().copy(v);
             });
           });
+          var blink = new TWEEN.Tween({tallY: leftEye.vertices[1].origin.y, smallY: leftEye.vertices[4].origin.y})
+              .to({tallY: leftEye.vertices[0].origin.y, smallY: leftEye.vertices[0].origin.y}, 50)
+              .onUpdate(function(v){
+                leftEye.vertices[1].origin.y=v.tallY;
+                leftEye.vertices[4].origin.y=v.smallY;
+                rightEye.vertices[1].origin.y=v.tallY;
+                rightEye.vertices[4].origin.y=v.smallY;
+              })
+              .onComplete(function(e){
+                var blinkEnd = new TWEEN.Tween({tallY: leftEye.vertices[1].origin.y, smallY: leftEye.vertices[4].origin.y})
+                    .to({tallY: -eye_height/2, smallY: -eye_height/2+eye_thickness}, 50)
+                    .delay(150)
+                    .onUpdate(function(v){
+                      leftEye.vertices[1].origin.y=v.tallY;
+                      leftEye.vertices[4].origin.y=v.smallY;
+                      rightEye.vertices[1].origin.y=v.tallY;
+                      rightEye.vertices[4].origin.y=v.smallY;
+                    })
+                    .onComplete(function(e){
+                      var blinkIDLE = new TWEEN.Tween({tallY: leftEye.vertices[1].origin.y, smallY: leftEye.vertices[4].origin.y}) //hacky async delay before starting blink loop again
+                          .to({tallY: eye_height/2, smallY: eye_height/2-eye_thickness}, Math.random()*7000+6000)
+                          .onComplete(function(e){
+                            blink.start();
+                          })
+                          .start();
+                    })
+                    .start();
+              })
+              .start();
           var $window = $(window)
             .bind('mousemove', function(e) {
               mouse.x = e.clientX;
@@ -126,7 +184,7 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
               // mouse.x=Math.random()*two.width
               // mouse.y=Math.random()*two.height
 
-              eye_properties.eye_width+=10;
+              eye_thickness_base+=10;
               _.each(leftEye.vertices, function(v){
                 console.log(v.origin);
               });
@@ -144,6 +202,7 @@ left: 0px; right: 0px; bottom: 0px; position: fixed;">
             TWEEN.update();
             mouseDot.translation.set(mouse.x,mouse.y)
             delta.copy(mouse).subSelf(eyes.translation);
+          
             _.each(eyes.children, function(v){
               _.each(v.vertices, function(v, i) {
                 var dist = v.origin.distanceTo(delta);

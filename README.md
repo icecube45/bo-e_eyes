@@ -3,7 +3,7 @@
 
 Bo-E is a 3d printed ROS robot originally made to use all my spare parts.
 
-However, after putting effort into designing Bo-E, I started to love the project and bot. As a result, commpomnents were upgraded and a lot more time was invested into the look and operation of the bot.
+However, after putting effort into designing Bo-E, I started to love the project and bot. As a result, components were upgraded and a lot more time was invested into the look and operation of the bot.
 
 One of the main features of Bo-E is the forward facing screen. This reposity contains the javascript side code that operates a "face" on said screen.
 

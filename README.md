@@ -13,5 +13,8 @@ The eventual goals of Bo-E's eyes is to:
 - Track faces
 
 
+Being as I *really* don't know how to code javascript correctly (that is, assuming it's humanly possible), I'm expecting this codebase to go through continuous refactoring as I learn more about javascript
+
+
 I'm already really happy with the little details put into the eye animations (shown below), but a lot more needs to be done before Bo-E's eyes are declared "done". That is, if they ever are.
 ![Bo-E's Eyes](img/bo-e_eyes.gif)

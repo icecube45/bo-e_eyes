@@ -3,12 +3,16 @@ function distToTime(x_new, x_old, y_new, y_old){
   var b = y_new - y_old;
 
   var c = Math.sqrt( a*a + b*b );
-  return c;
+  return c*ms_per_pixel;
 };
 
+Math.radians = function(degrees) {
+  return degrees * Math.PI / 180;
+};
 
-
-
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 $(function() {
   var DEBUG = false;
@@ -21,20 +25,19 @@ $(function() {
     fullscreen: true,
     autostart: true
   }).appendTo(document.body);
-
+  ms_per_pixel = 1.8;
   Two.Resoultion = 32;
   var eye_properties = {};
   eye_thickness_base = 37.5;
-  eye_amplitude_base = 37.5;
+
   eye_height_base = 75;
   eye_width_base  = 150;
   eye_spacing_base = 138;
   eye_thickness=eye_thickness_base
-  eye_amplitude=eye_amplitude_base
   eye_height=eye_height_base
   eye_width = eye_width_base
   eye_spacing = eye_spacing_base
-
+  var target = new Two.Vector(two.width/2, two.height/2);
   var delta = new Two.Vector();
   var mouse = new Two.Vector();
   var adjDelta = new Two.Vector();
@@ -133,11 +136,12 @@ $(function() {
   // eyes.scale = two.width/656;
   console.log("SCALE:");
   console.log(two.width/656);
-  eyes.noStroke().fill = "#2980b9";
+  eyeColor = new Color("#2980b9");
+  eyes.noStroke().fill = eyeColor.getHex();
   mouseDot.noStroke().fill = "#FFFFFF";
   mouseDot.visible=false;
   if(DEBUG){
-   eyes.noFill().stroke = "#2980b9";
+   eyes.noFill().stroke = eyeColor.getHex();
    groupRect.noFill().stroke = "#ff0000";
    forceVector.stroke = "#00ff00";
    mouseDot.visible=true;
@@ -177,6 +181,23 @@ $(function() {
             .start();
       })
       .start();
+  function randCoordMove(){
+    x_new= getRandomInt((eyes.getBoundingClientRect().right-eyes.getBoundingClientRect().left)/2,two.width-((eyes.getBoundingClientRect().right-eyes.getBoundingClientRect().left)/2));
+    y_new= getRandomInt((eyes.getBoundingClientRect().bottom-eyes.getBoundingClientRect().top)/2, two.height-((eyes.getBoundingClientRect().bottom-eyes.getBoundingClientRect().top)/2));
+    var moveRand = new TWEEN.Tween(target)
+        .to({x: x_new, y: y_new}, distToTime(x_new, target.x, y_new, target.y))
+        .easing(TWEEN.Easing.Exponential.Out)
+        .onComplete(function(e){
+          new TWEEN.Tween({x: 0}) //hacky async delay before starting blink loop again
+              .to({x: 0}, Math.random()*1000+1200)
+              .onComplete(function(e){
+                randCoordMove();
+              })
+              .start();
+        })
+        .start();
+  }
+  randCoordMove();
   var $window = $(window)
     .bind('mousemove', function(e) {
       mouse.x = e.clientX;
@@ -189,6 +210,7 @@ $(function() {
     .bind('mousedown', function(e){
       switch(event.which){
           case 1:
+            eyeColor.tween(800,"#2980b9")
             var rotateOne = new TWEEN.Tween(leftEye)
                 .to({rotation: Math.PI}, 200)
                 .onUpdate(function(v){rightEye.rotation=v.rotation})
@@ -209,11 +231,12 @@ $(function() {
                 })
                 .start();
             break;
-          case 2:
+          case 3:
             var rotateOne = new TWEEN.Tween(leftEye)
                 .to({rotation: Math.PI}, 200)
                 .onUpdate(function(v){rightEye.rotation=-v.rotation})
                 .start();
+            eyeColor.tween(500,"#ff0000")
             // var angryColor = new TWEEN.Tween(leftEye)
             //     .to({fill: "#ff0000"}, 200)
             //     .onUpdate(function(v){
@@ -222,6 +245,33 @@ $(function() {
             //     .onComplete(function(e){
             //     })
             //     .start();
+            break;
+         case 2:
+           var scaleLeft = new TWEEN.Tween(leftEye)
+              .to({scale: 1.25, rotation: Math.radians(15)}, 500)
+              .easing(TWEEN.Easing.Elastic.Out)
+              .start();
+           var scaleLeft = new TWEEN.Tween(rightEye)
+              .to({scale: .7, rotation: Math.radians(-20)}, 500)
+              .easing(TWEEN.Easing.Elastic.Out)
+              .onComplete(function(v){
+                new TWEEN.Tween({x:0})
+                .to({x:1},1000)
+                .onComplete(function(v){
+                  eyeColor.tween(500,"#2980b9");
+                  new TWEEN.Tween(leftEye)
+                  .to({rotation: 0, scale: 1},600)
+                  .easing(TWEEN.Easing.Exponential.Out)
+                  .start()
+                  new TWEEN.Tween(rightEye)
+                  .to({rotation: 0, scale: 1},600)
+                  .easing(TWEEN.Easing.Exponential.Out)
+                  .start()
+                })
+                .start()
+              })
+              .start();
+            eyeColor.tween(300,"#e67e22");
             break;
       }
 
@@ -236,9 +286,20 @@ $(function() {
     });
   two.bind('update', function() {
     TWEEN.update();
+    if(DEBUG){
+      eyes.stroke = eyeColor.getHex();
+    }
+    else{
+      eyes.fill = eyeColor.getHex();
+    }
+
+
+
     mouseDot.translation.set(mouse.x,mouse.y);
-    console.log()
-    delta.copy(mouse).subSelf(eyes.translation);
+    if(DEBUG){
+      target.copy(mouse)
+    }
+    delta.copy(target).subSelf(eyes.translation);
     _.each(eyes.children, function(v){
       var rot = v.rotation;
       var ca = Math.cos(-rot);
@@ -251,7 +312,6 @@ $(function() {
         var pct = dist / width;
         var x = adjDelta.x * pct;
         var y = adjDelta.y * pct;
-
         var destx = v.origin.x - x;
         var desty = v.origin.y - y;
         v.x += (destx - v.x) * drag;
@@ -264,12 +324,13 @@ $(function() {
     });
     eyes.translation.addSelf(delta);
     if(DEBUG){
+      eyes.stroke = eyeColor.getHex();
+
       groupRect.vertices[0].set(eyes.getBoundingClientRect().left, eyes.getBoundingClientRect().top);
       groupRect.vertices[1].set(eyes.getBoundingClientRect().right, eyes.getBoundingClientRect().top);
       groupRect.vertices[3].set(eyes.getBoundingClientRect().left, eyes.getBoundingClientRect().bottom);
       groupRect.vertices[2].set(eyes.getBoundingClientRect().right, eyes.getBoundingClientRect().bottom);
     }
-    console.log(leftEye.fill)
   });
 
 });
